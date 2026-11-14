@@ -1,0 +1,7 @@
+README.md
+LICENSE
+
+{{ if not .pkg_security }}
+.gdbinit
+.gef.py
+{{ end }}

@@ -1,0 +1,46 @@
+# Third-party code pulled from upstream instead of being committed here.
+# git-repo externals clone if missing and `git pull` if already present,
+# so an existing oh-my-zsh install (e.g. on a work machine) is reused, not wiped.
+
+[".oh-my-zsh"]
+    type = "git-repo"
+    url = "https://github.com/ohmyzsh/ohmyzsh.git"
+    refreshPeriod = "168h"
+    [".oh-my-zsh".clone]
+        args = ["--depth", "1"]
+    [".oh-my-zsh".pull]
+        args = ["--ff-only"]
+
+[".oh-my-zsh/custom/themes/powerlevel10k"]
+    type = "git-repo"
+    url = "https://github.com/romkatv/powerlevel10k.git"
+    refreshPeriod = "168h"
+    [".oh-my-zsh/custom/themes/powerlevel10k".clone]
+        args = ["--depth", "1"]
+    [".oh-my-zsh/custom/themes/powerlevel10k".pull]
+        args = ["--ff-only"]
+
+[".oh-my-zsh/custom/plugins/zsh-autosuggestions"]
+    type = "git-repo"
+    url = "https://github.com/zsh-users/zsh-autosuggestions.git"
+    refreshPeriod = "168h"
+    [".oh-my-zsh/custom/plugins/zsh-autosuggestions".clone]
+        args = ["--depth", "1"]
+    [".oh-my-zsh/custom/plugins/zsh-autosuggestions".pull]
+        args = ["--ff-only"]
+
+[".oh-my-zsh/custom/plugins/zsh-syntax-highlighting"]
+    type = "git-repo"
+    url = "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+    refreshPeriod = "168h"
+    [".oh-my-zsh/custom/plugins/zsh-syntax-highlighting".clone]
+        args = ["--depth", "1"]
+    [".oh-my-zsh/custom/plugins/zsh-syntax-highlighting".pull]
+        args = ["--ff-only"]
+
+{{ if .pkg_security -}}
+# GEF for gdb, pinned to a release; bump the tag to upgrade.
+[".gef.py"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/hugsy/gef/2026.01/gef.py"
+{{- end }}

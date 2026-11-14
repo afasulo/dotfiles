@@ -1,0 +1,8 @@
+# Managed by chezmoi. Machine-specific git settings go in ~/.gitconfig.local.
+[user]
+	name = {{ .git_name }}
+	email = {{ .git_email }}
+
+# Loaded last, so anything in it wins.
+[include]
+	path = ~/.gitconfig.local

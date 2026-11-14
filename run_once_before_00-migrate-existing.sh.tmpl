@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# First-run safety net: before chezmoi overwrites anything on a machine that
+# already has its own config, back up the originals and keep their
+# machine-specific parts in untracked *.local files that the shared configs load.
+#
+#   ~/.zshrc     -> lines not in the shared .zshrc go to ~/.zshrc.local (commented, for review)
+#   ~/.gitconfig -> moved whole to ~/.gitconfig.local (included, so still active)
+#   ~/.zprofile  -> moved whole to ~/.zprofile.local (sourced, so still active)
+#   everything   -> copied to ~/.dotfiles-backup/<timestamp>/
+set -euo pipefail
+
+marker="$HOME/.dotfiles-backup/.migrated"
+[ -f "$marker" ] && exit 0
+
+ts="$(date +%Y%m%d-%H%M%S)"
+backup="$HOME/.dotfiles-backup/$ts"
+mkdir -p "$backup"
+chmod 700 "$HOME/.dotfiles-backup"
+
+for f in .zshrc .zprofile .gitconfig .p10k.zsh .gdbinit; do
+  [ -e "$HOME/$f" ] && cp -p "$HOME/$f" "$backup/$f"
+done
+
+# ---- .zshrc: keep anything that isn't part of the shared config ----------
+if [ -f "$HOME/.zshrc" ] && [ ! -e "$HOME/.zshrc.local" ]; then
+  shared="$(mktemp)"
+  cat > "$shared" <<'SHARED_ZSHRC'
+{{ template "zshrc" . }}
+SHARED_ZSHRC
+  extra="$(mktemp)"
+  # Lines from the old .zshrc that don't appear (whitespace-trimmed) in the shared one,
+  # ignoring blank lines and comments.
+  awk 'NR==FNR { gsub(/^[ \t]+|[ \t]+$/, ""); seen[$0]=1; next }
+       { t=$0; gsub(/^[ \t]+|[ \t]+$/, "", t) }
+       t=="" || t ~ /^#/ { next }
+       !(t in seen) { print }' "$shared" "$HOME/.zshrc" > "$extra"
+  if [ -s "$extra" ]; then
+    {
+      echo "# ~/.zshrc.local: machine-specific zsh config, never committed."
+      echo "# Created by the dotfiles migration on $ts from your previous ~/.zshrc"
+      echo "# (full original: $backup/.zshrc)."
+      echo "#"
+      echo "# These lines were in your old .zshrc but not in the shared one."
+      echo "# They are COMMENTED OUT so nothing breaks. Uncomment what you want to keep"
+      echo "# (e.g. work functions/aliases/exports), then run: exec zsh"
+      echo "# Put tokens/secrets in ~/.secrets instead."
+      echo
+      sed 's/^/# /' "$extra"
+    } > "$HOME/.zshrc.local"
+    printf '\n\033[1;33m[dotfiles]\033[0m Your old ~/.zshrc had %s line(s) not in the shared config.\n' "$(wc -l < "$extra" | tr -d ' ')"
+    printf '           They were saved (commented out) to ~/.zshrc.local. Review and uncomment what you need.\n\n'
+  fi
+  rm -f "$shared" "$extra"
+fi
+
+# ---- .gitconfig / .zprofile: keep them fully active via *.local -----------
+if [ -f "$HOME/.gitconfig" ] && [ ! -e "$HOME/.gitconfig.local" ] \
+   && ! grep -q 'Managed by chezmoi' "$HOME/.gitconfig"; then
+  cp -p "$HOME/.gitconfig" "$HOME/.gitconfig.local"
+fi
+if [ -f "$HOME/.zprofile" ] && [ ! -e "$HOME/.zprofile.local" ] \
+   && ! grep -q 'Managed by chezmoi' "$HOME/.zprofile" \
+   && grep -vqE '^\s*(#|$)|brew shellenv' "$HOME/.zprofile"; then
+  grep -v 'brew shellenv' "$HOME/.zprofile" > "$HOME/.zprofile.local"
+fi
+
+touch "$marker"
+echo "[dotfiles] Backed up existing configs to $backup"

@@ -1,0 +1,25 @@
+# Package sets. "core" always installs; the others are opt-in per machine
+# (answered on `chezmoi init`, stored in ~/.config/chezmoi/chezmoi.toml).
+# Editing this file makes `chezmoi apply` re-run the install script.
+# Packages missing from a distro's repos are skipped with a warning.
+packages:
+  core:
+    brew: [git, neovim, tmux, gh, uv, node, wget, tree, pandoc, cmake, gcc, python@3.12, docker-compose]
+    cask: [middleclick]
+    apt: [zsh, git, curl, neovim, tmux, gh, wget, tree, pandoc, cmake, build-essential, python3, python3-pip, python3-venv, nodejs, npm]
+    dnf: [zsh, git, curl, neovim, tmux, gh, wget, tree, pandoc, cmake, gcc, gcc-c++, make, python3, python3-pip, nodejs, npm]
+    script: [uv]
+  security:
+    brew: [gdb, nmap, gobuster, shodan, vsftpd]
+    cask: [ghidra]
+    apt: [gdb, nmap, gobuster, vsftpd, file]
+    dnf: [gdb, nmap, vsftpd, file]
+    uv_tool: [shodan]
+  hardware:
+    brew: [librealsense, tracy]
+  langs:
+    brew: [gradle, freetds]
+    cask: [temurin]
+    apt: [default-jdk, gradle, freetds-dev]
+    dnf: [java-latest-openjdk-devel, freetds-devel]
+    script: [ghcup]

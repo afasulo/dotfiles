@@ -1,0 +1,18 @@
+{{- /* Asked once per machine on `chezmoi init`; answers are stored in ~/.config/chezmoi/chezmoi.toml */ -}}
+{{- $profile  := promptChoiceOnce . "profile" "Machine profile" (list "personal" "work") "personal" -}}
+{{- $gitName  := promptStringOnce . "git_name" "Git name for this machine" "afasulo" -}}
+{{- $gitEmail := promptStringOnce . "git_email" "Git email for this machine" -}}
+{{- $security := promptBoolOnce . "pkg_security" "Install security/RE tools (gdb+GEF, ghidra, nmap, gobuster, shodan, vsftpd)" ($profile | eq "personal") -}}
+{{- $hardware := promptBoolOnce . "pkg_hardware" "Install hardware tools (librealsense, tracy; macOS only)" false -}}
+{{- $langs    := promptBoolOnce . "pkg_langs" "Install extra languages (Java/temurin, gradle, freetds, Haskell via ghcup)" ($profile | eq "personal") -}}
+
+[data]
+    profile = {{ $profile | quote }}
+    git_name = {{ $gitName | quote }}
+    git_email = {{ $gitEmail | quote }}
+    pkg_security = {{ $security }}
+    pkg_hardware = {{ $hardware }}
+    pkg_langs = {{ $langs }}
+
+[diff]
+    exclude = ["scripts"]
